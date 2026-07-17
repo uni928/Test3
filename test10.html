@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; font-src 'none'; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'self' data: blob:;">
+<title>Private Page</title>
+<script>
+(function () {
+  try {
+    if (false) {
+      document.documentElement.classList.add('auto-unlocking');
+    } else if (true) {
+      const key = new URLSearchParams(window.location.search).get('key');
+      if (key) document.documentElement.classList.add('auto-unlocking');
+    }
+  } catch (_) {}
+})();
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    color: #172033;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(37,99,235,.20), transparent 26rem),
+      linear-gradient(135deg, #f8fbff, #eef5ff);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+  .box {
+    width: min(430px, 100%);
+    border: 1px solid #d9e4f2;
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 24px 70px rgba(15,62,168,.16);
+    overflow: hidden;
+  }
+  .top {
+    padding: 28px 24px;
+    color: #fff;
+    background: linear-gradient(135deg, #102a60, #2563eb);
+    text-align: center;
+  }
+  .top h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    line-height: 1.45;
+  }
+  .main { padding: 24px; }
+  input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #c7d7eb;
+    border-radius: 16px;
+    outline: none;
+    font: inherit;
+    margin-bottom: 12px;
+    background: #fbfdff;
+  }
+  input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,.13);
+  }
+  button {
+    width: 100%;
+    border: 0;
+    border-radius: 18px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #2563eb, #0f3ea8);
+    color: white;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  button:disabled {
+    opacity: .62;
+    cursor: default;
+  }
+  button.secondary {
+    margin-top: 10px;
+    color: #172033;
+    background: #eef5ff;
+    border: 1px solid #c7d7eb;
+  }
+  input[type=file] { display: none; }
+  .message {
+    min-height: 1.4em;
+    margin-top: 14px;
+    color: #667085;
+    text-align: center;
+    font-size: .9rem;
+    line-height: 1.6;
+  }
+  .error { color: #b42318; }
+  html.auto-unlocking body { visibility: hidden; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="top"><h1>🔒 Private Page</h1></div>
+  <div class="main">
+    <input id="unlockKey" type="password" placeholder="パスワードを入力" autocomplete="current-password" autofocus>
+    <button id="unlockButton" type="button">開く</button>
+    <button id="openUnlockFileButton" class="secondary" type="button">解除用ファイルを開く</button>
+    <input id="unlockFileInput" type="file" accept=".txt,text/plain">
+    <div id="message" class="message"></div>
+  </div>
+</div>
+<script>
+const PAGE_TITLE = "Private Page";
+const QUERY_UNLOCK = true;
+const REMEMBER_UNLOCK = false;
+const STRICT_VIEW = false;
+const CAPACITY_SAVE = true;
+const NO_ENCRYPTION_MODE = false;
+const PLAIN_HTML_DATA = "";
+const TWO_STAGE_JAVASCRIPT = true;
+const STAGE2_KEY = "M3rJ20VkiUQSBFNK866y4dwQygyxSiDX5IO9c85C2NQU70JOxPieo5OarDoBf79ew5gXNM6QhOahkiZThMg2YiTFI6ug0EmJzxpH";
+const STAGE2_SALT = "2dyPJdElJcfxgFugAQBw0w==";
+const STAGE2_IV = "pewpCKa8MVBbpnrA";
+const STAGE2_DATA = "EaKA8uar6yrNlpHTEey+YoB4DSDvRLync25l0RPH+Ow0Wqu4MVcESFckiB8Ywe+9bEiyKIjeYNa5b+ftve9rvevqvIG0ONXQ+SmM9FNSjnRGlv7x4s4OVvIJGCcpFgYmtx6Aj7y44xdVVp/nwd70ptgtVPxHhRhGLkk1e32eOs8jNxEMpcOGpqljLRT3V5HXmdkaKrueBGeNtbjguc9PApIqOvXFtw4ruEGDMw/GFBcofhu0CWa6rN8/ssuuGtzmtB+gn1vF3uHRK1avE8LdAbzoJ7IuSnV/UWY/aB9tEkJWDUAvsMnIkCfkrLeCgh8H8TjaKBkOqN1e6N5JMQn82KPAuUf8dGLWO/wVbBsQjx6q4kxEO0MXLLIWRk5wRWlkmimR8yZF2mLupBVeG9u/RbjGSOCFKz/YuFN80N5PVToOyKIP6KfPdKFJOEs/nsJRJ5xphCRL964Ns+pkf+aVs7klX/oKbiGMo7xXDZElKw0l5ACWMpsXJ/c3k9suMGSrNkrZ8UUm8gH7oZGwJWmqzIm0Vj/MEI/dD2XIlcoVJShZllo0RVlQwJ2zodj+1NolrRVVmbdlKD82Pl3vXetFDTt+hYIC/B/B8e04kCvN9o8rDS1Nd7YDvEjNiCtLfONt6HG5OZx1QGm64NEDT4NapUc+knQc0OcaWvzEQDHzZsaMBFrKaSCfctHPn3ZdbF420D3ShVzG9DW4sjYRoDudsBLkjN1fdlwxfXSpN4Qv7x7W6V1c1GA6kl9EacknuHa1F8UIB8IxQ4fqnLLi3GItZf3bXEnhSPYpQ7t1XqBDgeEDRgcln+XVWLoXrkhDv08iU6HfPxvmwypzgyI0+L8yf5saTVrpNYFLT1VGd/B3+daM1CktgXXm2NuLOi4/P7bAXKjMRIDhvPZB0vmXYCwwb0Q9WQRS59MmeW80i6g6/K8sa3YDhf3GsN4SFzPRBl8OKeBAyIDmFr7sOoycQsGGIt/rlaGkY81FpyY3s1Dq37WYFXQGdra68aEYSwo3ckk7IfdODL+ufkH2mymab0Q93piYYybirZW8vXwF1rGRyOfPuF3PtwtS+qHGIRVHttT0uvH0dbpw1srriEFAOZWX/Tcrly3dBuqyMwp6InA3rmkMEdjvk8GYJuREYE0cVbl+hIl7YsmbKr4Rc3ZhHdWpHCAcHF8+q7GKLVP69tyeqPKkc6sFHWA3jWxlKqUlUI87y3rcdH/0enC7NmF6Ql0wd/SG2C4ToV1zNzB1+6jumivT0oLKQzDh8nuqsW2axhbJPgfInbcsHRKBHJgtSZtLFiT96/oyP28A4kSmjxecXLiozcxwfL7NAzIYYDCE2RVkh0NZRDwcBCAEPNzX7N0nbPo2+N1+nBVHmaTJK2lyHoVLu14PCe3cPgzNBuInb0ugYoH0T4/cSIoLdokYbqOUW9aZM9p9xazDfLOH3+aJbd2VYOGMATqw3eC5YccR/1j0L6AS0OhAgueDEPkTxxH7OsKQkdL6jz1+JrGz/ywZ6QGKObRvWbw9XSjEKVIUJ0BIbWX89gk5sk71Jwth7xUJJ57xnexo3Cfa9k5GkzpUNvlJ13Q9xIDY8UAm88NXqEppo/WKiqw5OgexnU/nNgX3hgdzQboDvZ0G9K7gZrSAgb8rV3hsmWTHCAUg7fer07b2UWI80ON5ixgKDVRNhcqfr+3b3h7WshD5TngSdiAI+kXaxKOAHmJWBrPR1Hp8SBrlCH6mJkyFk1JnNiucDu4xyR0ffliTzBOR4bPKqjiJIjG3gWe/HH2j2AdWHgtQOrzM9xiIb7r1XzlPlorKfoi+tBkmziUFO2QtOneo46E=";
+const LOCKED_SALT = "tHviVRCgcbWVtZ+cvCUhZA==";
+const LOCKED_IV = "kQegMy37p4dVgZxl";
+const LOCKED_DATA = "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";
+const UNLOCK_STORAGE_SECRET = "ZAwfP1q85N81lXr0kLsvgQZqSmSUB9ZUIag7fh3aLlNOhybsFwHyPwKkYaZA8hOeOeeJSDMCQKSfvYFFuVRB9JfEApc4PIaPyBwU";
+
+function fromBase64(value) {
+  return Uint8Array.from(atob(value), char => char.charCodeAt(0));
+}
+
+function toBase64(buffer) {
+  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 32768;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+function hideQueryKey() {
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('key')) return;
+    url.searchParams.delete('key');
+    window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+  } catch (_) {}
+}
+
+function showUnlockScreen() {
+  document.documentElement.classList.remove('auto-unlocking');
+}
+
+function riskyUrl(value) {
+  const text = String(value || '').trim();
+  if (!text) return false;
+  if (/^(javascript|vbscript|data:text\/html)/i.test(text)) return true;
+  try {
+    const url = new URL(text, window.location.href);
+    return ['http:', 'https:', 'ftp:', 'ws:', 'wss:'].includes(url.protocol);
+  } catch (_) {
+    return false;
+  }
+}
+
+function cleanCss(text) {
+  return String(text || '')
+    .replace(/@import[^;]+;/gi, '')
+    .replace(/url\s*\(([^)]*)\)/gi, (all, raw) => {
+      const value = raw.trim().replace(/^['"]|['"]$/g, '');
+      return riskyUrl(value) ? 'none' : all;
+    });
+}
+
+function staticOnly(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script, iframe, frame, object, embed, meta[http-equiv="refresh"], link[rel="preload"], link[rel="prefetch"], link[rel="preconnect"], link[rel="dns-prefetch"], link[rel="modulepreload"]').forEach(node => node.remove());
+
+  doc.querySelectorAll('link').forEach(node => {
+    const rel = (node.getAttribute('rel') || '').toLowerCase();
+    const href = node.getAttribute('href') || '';
+    if (rel.includes('stylesheet') || riskyUrl(href)) node.remove();
+  });
+
+  doc.querySelectorAll('style').forEach(node => {
+    node.textContent = cleanCss(node.textContent);
+  });
+
+  const urlAttributes = new Set(['src', 'srcset', 'href', 'poster', 'action', 'formaction', 'data', 'background']);
+  doc.querySelectorAll('*').forEach(node => {
+    for (const attr of Array.from(node.attributes)) {
+      const name = attr.name.toLowerCase();
+      if (name.startsWith('on')) node.removeAttribute(attr.name);
+      else if (name === 'style') node.setAttribute('style', cleanCss(attr.value));
+      else if (urlAttributes.has(name) && riskyUrl(attr.value)) node.removeAttribute(attr.name);
+    }
+  });
+
+  const meta = doc.createElement('meta');
+  meta.setAttribute('name', 'referrer');
+  meta.setAttribute('content', 'no-referrer');
+  doc.head.prepend(meta);
+
+  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+}
+
+async function gunzip(bytes) {
+  if (!window.DecompressionStream) throw new Error('このブラウザは解凍APIに対応していません。');
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).arrayBuffer();
+}
+
+async function decodePlainHtml() {
+  const bytes = fromBase64(PLAIN_HTML_DATA);
+  const body = CAPACITY_SAVE ? await gunzip(bytes) : bytes;
+  return new TextDecoder().decode(body);
+}
+
+async function A7qM2zLp() {
+  if (!TWO_STAGE_JAVASCRIPT || !STAGE2_KEY || !STAGE2_SALT || !STAGE2_IV || !STAGE2_DATA) return [];
+  const secret = await crypto.subtle.importKey('raw', new TextEncoder().encode(STAGE2_KEY), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: fromBase64(STAGE2_SALT), iterations: 600000, hash: 'SHA-256' },
+    secret,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64(STAGE2_IV) }, key, fromBase64(STAGE2_DATA));
+  const body = CAPACITY_SAVE ? await gunzip(new Uint8Array(plain)) : plain;
+  const parsed = JSON.parse(new TextDecoder().decode(body));
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function setScriptAttributes(target, attrs) {
+  for (const [name, value] of Object.entries(attrs || {})) {
+    if (name.toLowerCase() === 'src') continue;
+    try { target.setAttribute(name, value); } catch (_) {}
+  }
+}
+
+function Ab5Kx9Rt(record) {
+  return new Promise(resolve => {
+    const attrs = record.attrs || {};
+    const script = document.createElement('script');
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      try { script.remove(); } catch (_) {}
+      resolve();
+    };
+    setScriptAttributes(script, attrs);
+
+    if (attrs.src) {
+      script.onload = finish;
+      script.onerror = finish;
+      script.src = attrs.src;
+      (document.body || document.documentElement).appendChild(script);
+      return;
+    }
+
+    script.textContent = record.text || '';
+    (document.body || document.documentElement).appendChild(script);
+    finish();
+  });
+}
+
+async function runStage2Scripts() {
+  try {
+    const scripts = await A7qM2zLp();
+    for (const record of scripts) await Ab5Kx9Rt(record);
+  } catch (error) {
+    console.error('Stage2 JavaScript restore failed:', error);
+  }
+}
+
+function stage2LoaderScript() {
+  if (!TWO_STAGE_JAVASCRIPT || STRICT_VIEW) return '';
+  const loader = '(' + function(config) {
+    function fromBase64(value) {
+      return Uint8Array.from(atob(value), function(char) { return char.charCodeAt(0); });
+    }
+    async function gunzip(bytes) {
+      if (!window.DecompressionStream) throw new Error('このブラウザは解凍APIに対応していません。');
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      return await new Response(stream).arrayBuffer();
+    }
+    async function A7qM2zLp() {
+      const secret = await crypto.subtle.importKey('raw', new TextEncoder().encode(config.key), 'PBKDF2', false, ['deriveKey']);
+      const key = await crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: fromBase64(config.salt), iterations: 600000, hash: 'SHA-256' },
+        secret,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64(config.iv) }, key, fromBase64(config.data));
+      const body = config.capacitySave ? await gunzip(new Uint8Array(plain)) : plain;
+      const parsed = JSON.parse(new TextDecoder().decode(body));
+      return Array.isArray(parsed) ? parsed : [];
+    }
+    function setScriptAttributes(target, attrs) {
+      Object.entries(attrs || {}).forEach(function(entry) {
+        const name = entry[0];
+        const value = entry[1];
+        if (String(name).toLowerCase() === 'src') return;
+        try { target.setAttribute(name, value); } catch (_) {}
+      });
+    }
+    function Ab5Kx9Rt(record) {
+      return new Promise(function(resolve) {
+        const script = document.createElement('script');
+        const attrs = record.attrs || {};
+        let done = false;
+        function finish() {
+          if (done) return;
+          done = true;
+          try { script.remove(); } catch (_) {}
+          resolve();
+        }
+        setScriptAttributes(script, attrs);
+        if (attrs.src) {
+          script.onload = finish;
+          script.onerror = finish;
+          script.src = attrs.src;
+          (document.body || document.documentElement).appendChild(script);
+          return;
+        }
+        script.textContent = record.text || '';
+        (document.body || document.documentElement).appendChild(script);
+        finish();
+      });
+    }
+    async function main() {
+      try {
+        const scripts = await A7qM2zLp();
+        for (const record of scripts) await Ab5Kx9Rt(record);
+      } catch (error) {
+        console.error('Stage2 JavaScript restore failed:', error);
+      }
+    }
+    main();
+  } + ')(' + JSON.stringify({
+    key: STAGE2_KEY,
+    salt: STAGE2_SALT,
+    iv: STAGE2_IV,
+    data: STAGE2_DATA,
+    capacitySave: CAPACITY_SAVE
+  }) + ');';
+  const closingScriptPattern = new RegExp('<' + '/script', 'gi');
+  const safeLoader = loader.replace(closingScriptPattern, '<' + '\/script');
+  return '<script>' + safeLoader + '<\/script>';
+}
+
+function injectStage2Loader(html) {
+  if (!TWO_STAGE_JAVASCRIPT || STRICT_VIEW) return html;
+  const loader = stage2LoaderScript();
+  const closingBodyPattern = new RegExp('<' + '/body>', 'i');
+  if (closingBodyPattern.test(html)) return html.replace(closingBodyPattern, loader + '<' + '/body>');
+  return html + loader;
+}
+
+function scriptRecordFromNode(node, index) {
+  const attrs = {};
+  for (const attr of Array.from(node.attributes || [])) attrs[attr.name] = attr.value;
+  return {
+    index,
+    attrs,
+    text: node.textContent || ''
+  };
+}
+
+function bodyOnlyParts(source) {
+  const html = String(source || '');
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const title = doc.querySelector('title');
+  if (title && title.textContent) document.title = title.textContent;
+
+  const scripts = [];
+  doc.querySelectorAll('script').forEach((node, index) => {
+    scripts.push(scriptRecordFromNode(node, index));
+    node.remove();
+  });
+
+  doc.body.querySelectorAll('style, link[rel~="stylesheet"]').forEach(node => {
+    node.remove();
+  });
+
+  return {
+    html: doc.body.innerHTML,
+    scripts
+  };
+}
+
+async function openHtml(html) {
+  const output = STRICT_VIEW ? staticOnly(html) : html;
+
+  if (!TWO_STAGE_JAVASCRIPT || STRICT_VIEW) {
+    document.open();
+    document.write(output);
+    document.close();
+    document.documentElement.classList.remove('auto-unlocking');
+    if (document.body) document.body.style.visibility = '';
+    return;
+  }
+
+  // 暗号化ありの場合は、元HTML全体を書き込む旧方式に戻します。
+  // これにより、元HTMLのhead内CSSや通常の読み込み順を維持しやすくします。
+  document.open();
+  document.write(injectStage2Loader(output));
+  document.close();
+  document.documentElement.classList.remove('auto-unlocking');
+  if (document.body) document.body.style.visibility = '';
+}
+
+const UNLOCK_DB_NAME = 'local-html-locker-unlock-passwords';
+const UNLOCK_DB_VERSION = 1;
+const UNLOCK_STORE_NAME = 'kv';
+const UNLOCK_PASSWORDS_KEY = 'passwords:' + UNLOCK_STORAGE_SECRET;
+const UNLOCK_PASSWORDS_BLOB_VERSION = 3;
+
+function canUseUnlockStorage() {
+  return REMEMBER_UNLOCK && /^[A-Za-z0-9]{100}$/.test(UNLOCK_STORAGE_SECRET);
+}
+
+function openUnlockDb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) {
+      reject(new Error('このブラウザはIndexedDBに対応していません。'));
+      return;
+    }
+    const request = indexedDB.open(UNLOCK_DB_NAME, UNLOCK_DB_VERSION);
+    request.onupgradeneeded = event => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(UNLOCK_STORE_NAME)) db.createObjectStore(UNLOCK_STORE_NAME);
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('IndexedDBを開けませんでした。'));
+  });
+}
+
+async function unlockDbGet(key, fallbackValue) {
+  const db = await openUnlockDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(UNLOCK_STORE_NAME, 'readonly');
+    const store = tx.objectStore(UNLOCK_STORE_NAME);
+    const request = store.get(key);
+    request.onsuccess = () => resolve(request.result ?? fallbackValue);
+    request.onerror = () => reject(request.error || new Error('IndexedDBの読込に失敗しました。'));
+    tx.oncomplete = () => db.close();
+    tx.onerror = () => { db.close(); reject(tx.error || new Error('IndexedDBの読込に失敗しました。')); };
+  });
+}
+
+async function unlockDbSet(key, value) {
+  const db = await openUnlockDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(UNLOCK_STORE_NAME, 'readwrite');
+    const store = tx.objectStore(UNLOCK_STORE_NAME);
+    store.put(value, key);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error || new Error('IndexedDBの保存に失敗しました。')); };
+  });
+}
+
+async function deriveUnlockStorageKey(salt) {
+  const seed = await crypto.subtle.importKey('raw', new TextEncoder().encode(UNLOCK_STORAGE_SECRET), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 210000, hash: 'SHA-256' },
+    seed,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptSavedPasswords(passwords) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveUnlockStorageKey(salt);
+  const cleanPasswords = Array.from(new Set(passwords.filter(item => typeof item === 'string' && item)));
+  const plain = new TextEncoder().encode(JSON.stringify(cleanPasswords));
+  const data = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plain);
+  return {
+    v: UNLOCK_PASSWORDS_BLOB_VERSION,
+    alg: 'AES-GCM/PBKDF2-SHA256',
+    marker: UNLOCK_STORAGE_SECRET,
+    salt: toBase64(salt),
+    iv: toBase64(iv),
+    data: toBase64(data)
+  };
+}
+
+async function decryptSavedPasswordsBlob(blob) {
+  if (!canUseUnlockStorage()) return [];
+  if (!blob || blob.v !== UNLOCK_PASSWORDS_BLOB_VERSION || blob.marker !== UNLOCK_STORAGE_SECRET || !blob.salt || !blob.iv || !blob.data) return [];
+  const key = await deriveUnlockStorageKey(fromBase64(blob.salt));
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64(blob.iv) }, key, fromBase64(blob.data));
+  const parsed = JSON.parse(new TextDecoder().decode(plain));
+  return Array.isArray(parsed) ? parsed.filter(item => typeof item === 'string' && item) : [];
+}
+
+async function getSavedPasswords() {
+  if (!canUseUnlockStorage()) return [];
+  try {
+    const value = await unlockDbGet(UNLOCK_PASSWORDS_KEY, null);
+    return await decryptSavedPasswordsBlob(value);
+  } catch (_) {
+    return [];
+  }
+}
+
+async function savePasswordIfNeeded(passphrase) {
+  if (!canUseUnlockStorage() || !passphrase) return;
+  try {
+    const passwords = await getSavedPasswords();
+    if (passwords.includes(passphrase)) return;
+    passwords.push(passphrase);
+    await unlockDbSet(UNLOCK_PASSWORDS_KEY, await encryptSavedPasswords(passwords));
+  } catch (_) {}
+}
+
+async function decryptWithPassphrase(passphrase) {
+  const secret = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: fromBase64(LOCKED_SALT), iterations: 600000, hash: 'SHA-256' },
+    secret,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64(LOCKED_IV) }, key, fromBase64(LOCKED_DATA));
+  const body = CAPACITY_SAVE ? await gunzip(new Uint8Array(plain)) : plain;
+  return new TextDecoder().decode(body);
+}
+
+async function tryUnlockWithPassphrase(passphrase, option) {
+  const showProgress = option && option.showProgress;
+  const showFailure = option && option.showFailure;
+  const saveOnSuccess = !option || option.saveOnSuccess !== false;
+  const button = document.getElementById('unlockButton');
+  const message = document.getElementById('message');
+
+  if (showProgress) {
+    message.className = 'message';
+    message.textContent = '復号しています...';
+    button.disabled = true;
+  }
+
+  try {
+    const html = await decryptWithPassphrase(passphrase);
+    if (saveOnSuccess) await savePasswordIfNeeded(passphrase);
+    await openHtml(html);
+    return true;
+  } catch (_) {
+    showUnlockScreen();
+    if (showFailure) {
+      message.className = 'message error';
+      message.textContent = 'パスワードが一致しません';
+    }
+    return false;
+  } finally {
+    if (showProgress) button.disabled = false;
+  }
+}
+
+async function unlock() {
+  const input = document.getElementById('unlockKey');
+  await tryUnlockWithPassphrase(input.value, { showProgress: true, showFailure: true, saveOnSuccess: true });
+}
+
+function extractPasswordFromInfoText(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === '【パスワード】') {
+      for (let j = i + 1; j < lines.length; j++) {
+        const value = lines[j].trim();
+        if (value) return value;
+      }
+      return '';
+    }
+  }
+  return '';
+}
+
+async function openUnlockFile(file) {
+  const message = document.getElementById('message');
+  try {
+    const text = await file.text();
+    const password = extractPasswordFromInfoText(text);
+    if (!password) {
+      message.className = 'message error';
+      message.textContent = '解除用ファイルからパスワードを読み取れませんでした';
+      return;
+    }
+    document.getElementById('unlockKey').value = password;
+    await tryUnlockWithPassphrase(password, { showProgress: true, showFailure: true, saveOnSuccess: true });
+  } catch (_) {
+    message.className = 'message error';
+    message.textContent = '解除用ファイルを開けませんでした';
+  }
+}
+
+async function trySavedPasswordsSilently() {
+  const passwords = await getSavedPasswords();
+  for (const password of passwords) {
+    const ok = await tryUnlockWithPassphrase(password, { showProgress: false, showFailure: false, saveOnSuccess: false });
+    if (ok) return true;
+  }
+  return false;
+}
+
+async function boot() {
+  if (NO_ENCRYPTION_MODE) {
+    try {
+      await openHtml(await decodePlainHtml());
+      return;
+    } catch (error) {
+      console.error('Plain HTML open failed:', error);
+      showUnlockScreen();
+    }
+  }
+
+  let queryTried = false;
+  if (QUERY_UNLOCK) {
+    const key = new URLSearchParams(window.location.search).get('key');
+    if (key) {
+      queryTried = true;
+      document.getElementById('unlockKey').value = key;
+      hideQueryKey();
+      const ok = await tryUnlockWithPassphrase(key, { showProgress: true, showFailure: true, saveOnSuccess: true });
+      if (ok) return;
+    }
+  }
+
+  const savedOk = await trySavedPasswordsSilently();
+  if (!savedOk && !queryTried) showUnlockScreen();
+}
+
+document.getElementById('unlockButton').addEventListener('click', unlock);
+document.getElementById('unlockKey').addEventListener('keydown', event => {
+  if (event.key === 'Enter') unlock();
+});
+document.getElementById('openUnlockFileButton').addEventListener('click', () => {
+  document.getElementById('unlockFileInput').click();
+});
+document.getElementById('unlockFileInput').addEventListener('change', event => {
+  const file = event.target.files && event.target.files[0];
+  if (file) openUnlockFile(file);
+  event.target.value = '';
+});
+boot();
+</script>
+</body>
+</html>
